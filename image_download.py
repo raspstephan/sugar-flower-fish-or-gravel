@@ -9,7 +9,7 @@ import os
 
 
 def download_imgs(year_range, months, save_path, lon_range, lat_range,
-                  deg2pix=100, satellite='Aqua'):
+                  deg2pix=100, satellite='Aqua', exist_skip=False):
     os.makedirs(save_path, exist_ok=True)
 
     lon1 = lon_range[0]; lon2 = lon_range[1]
@@ -32,11 +32,14 @@ def download_imgs(year_range, months, save_path, lon_range, lat_range,
                        str(yr)+d+loc+'&epsg=4326'+layer+
                        '&opacities=1,1&worldfile=false&format=image/jpeg'+
                        size)
-                urllib.request.urlretrieve(
-                    url,
-                    save_path+f'/{satellite}_CorrectedReflectance'+str(yr)+
+                save_str = (save_path+f'/{satellite}_CorrectedReflectance'+str(yr)+
                     date.strftime('%m')+'{:02d}'.format(date.day)+loc_str+
                     '.jpeg')
+                if exist_skip and os.path.exists(save_str):
+                    print('Skip')
+                else:
+                    urllib.request.urlretrieve(url, save_str)
+
 
 
 if __name__ == '__main__':
