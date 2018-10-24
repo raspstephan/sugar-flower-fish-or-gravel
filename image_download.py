@@ -38,8 +38,10 @@ def download_imgs(year_range, months, save_path, lon_range, lat_range,
                 if exist_skip and os.path.exists(save_str):
                     print('Skip')
                 else:
-                    urllib.request.urlretrieve(url, save_str)
-
+                    try:
+                        urllib.request.urlretrieve(url, save_str)
+                    except:
+                        print(f'Download failed for {save_str}')
 
 
 if __name__ == '__main__':
