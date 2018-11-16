@@ -9,7 +9,7 @@ import os
 
 
 def download_imgs(year_range, months, save_path, lon_range, lat_range,
-                  deg2pix=100, satellite='Aqua', exist_skip=False):
+                  deg2pix=100, satellite='Aqua', exist_skip=False, var='CorrectedReflectance_TrueColor'):
     os.makedirs(save_path, exist_ok=True)
 
     lon1 = lon_range[0]; lon2 = lon_range[1]
@@ -19,7 +19,7 @@ def download_imgs(year_range, months, save_path, lon_range, lat_range,
     loc= (f'&extent={lon1},{lat1},{lon2},{lat2}')
     loc_str = f'_{lon1}-{lon2}_{lat1}-{lat2}'
     size = (f'&width={int(dlon * deg2pix)}&height={int(dlat * deg2pix)}')
-    layer = (f'&layers=MODIS_{satellite}_CorrectedReflectance_TrueColor,Coastlines')
+    layer = (f'&layers=MODIS_{satellite}_{var},Coastlines')
 
     for yr in range(year_range[0], year_range[1]):
         for m in months:
