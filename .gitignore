@@ -3,3 +3,6 @@
 keras_maskrcnn
 keras_retinanet
 saved_models/
+.DS_Store
+.gitattributes
+**/__pycache__
