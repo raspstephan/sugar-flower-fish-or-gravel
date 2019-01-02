@@ -1,5 +1,3 @@
-import json
-
 def JSONParser(data):
     """call json.loads"""
     import json
