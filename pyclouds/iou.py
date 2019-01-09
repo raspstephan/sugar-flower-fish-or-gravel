@@ -53,6 +53,7 @@ def fill_array_with_boxes(annos, img_size):
     """
     arr = np.zeros(img_size, dtype=bool)
     for a in annos:
+        a =[np.int(ai) for ai in a]
         arr[a[0]:a[0]+a[2], a[1]:a[1]+a[3]] = True
     return arr
 
