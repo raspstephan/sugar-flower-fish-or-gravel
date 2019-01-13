@@ -1,3 +1,5 @@
+from .imports import *
+
 def JSONParser(data):
     """call json.loads"""
     import json
@@ -69,3 +71,24 @@ def most_common_boxes(boxes, visualize=False, return_all_pattern=False):
     if visualize: visualize_common_box(common_box)
     if return_all_pattern: return grid
     else: return common_box
+
+
+def split_classification_df(raw_df, workflow_name=None, workflow_version=None, date_range=None, drop_nli=False):
+    """
+    Takes as input the raw classification dataframe that comes out of parse_classifications().
+    Adds a datetime column. If not None, returns only rows with workflow_name, workflow_version.
+    Optionally, returns only labels in a certain date range. Dates must be in string format 'yyyy-mm-dd'.
+    Optionally, drops all labels of users that were not-logged-in (nli).
+    """
+    df = raw_df.copy()
+    df['datetime'] = pd.to_datetime(df['created_at'])
+    if workflow_name is not None:
+        df = df[df.workflow_name == workflow_name]
+    if workflow_version is not None:
+        df = df[df.workflow_version == workflow_name]
+    if date_range is not None:
+        df = df[(df.datetime.dt.date > np.datetime64(date_range[0])) &
+                (df.datetime.dt.date < np.datetime64(date_range[1]))]
+    if drop_nli:
+        df = df[df.user_name.apply(lambda u: 'not-logged-in' not in u)]
+    return df
