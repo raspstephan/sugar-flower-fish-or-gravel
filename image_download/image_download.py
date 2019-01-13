@@ -8,8 +8,8 @@ import fire
 import os
 
 
-def download_imgs(year_range, months, save_path, lon_range, lat_range,
-                  deg2pix=100, satellite='Aqua', exist_skip=False, var='CorrectedReflectance_TrueColor'):
+def download_MODIS_imgs(year_range, months, save_path, lon_range, lat_range,
+                  deg2pix=100, satellite='Aqua', exist_skip=False, var='CorrectedReflectance',filetype='jpeg'):
     os.makedirs(save_path, exist_ok=True)
 
     lon1 = lon_range[0]; lon2 = lon_range[1]
@@ -30,11 +30,11 @@ def download_imgs(year_range, months, save_path, lon_range, lat_range,
                 print(date.strftime('%y %m %d'))
                 url = ('https://gibs.earthdata.nasa.gov/image-download?TIME='+
                        str(yr)+d+loc+'&epsg=4326'+layer+
-                       '&opacities=1,1&worldfile=false&format=image/jpeg'+
+                       '&opacities=1,1&worldfile=false&format=image/'+filetype+
                        size)
-                save_str = (save_path+f'/{satellite}_CorrectedReflectance'+str(yr)+
+                save_str = (save_path+f'/{satellite}_'+var+str(yr)+
                     date.strftime('%m')+'{:02d}'.format(date.day)+loc_str+
-                    '.jpeg')
+                    '.'+filetype)
                 if exist_skip and os.path.exists(save_str):
                     print('Skip')
                 else:
