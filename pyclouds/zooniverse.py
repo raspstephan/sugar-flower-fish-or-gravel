@@ -157,6 +157,92 @@ def add_subject_set_id_to_clas_df(clas_df, subj_df):
     return clas_df
 
 
+def decode_filepath(fullpath):
+    """
+    Retrieve information hidden in the filename
+    
+    The filenames of the satellite images used
+    for the classification contain valuable information
+    about
+        - the satellite used (Terra or Aqua)
+        - the parameter shown (e.g. reflectance)
+        - date of overpass
+        - coordinates of region captured
+    These values are returend.
+    
+    Input
+    -----
+    fullpath : string or sequence of strings
+        Filepath or filenames which follow the format
+        /some/path/Region1_Season_Satellite/
+            Satellite_ParameterDate_lon0-lon1_lat0-lat1.*
+    
+    Returns
+    -------
+    file_info_df : pandas dataframe
+        Pandas dataframe with the filename as index
+        and the information as columns
+    
+    Example
+    -------
+    >>> decode_filepath('xyz/Region1_DJF_Aqua/Aqua_Var20070101_-61--40_10-24.jpeg')
+                                                        region season       date  \
+    Aqua_CorrectedReflectance20070101_-61--40_10-24...       1    DJF 2007-01-01   
+
+                                                       satellite  \
+    Aqua_CorrectedReflectance20070101_-61--40_10-24...      Aqua   
+
+                                                                   parameter  \
+    Aqua_CorrectedReflectance20070101_-61--40_10-24...  CorrectedReflectance   
+
+                                                        lon0  lon1  lat0  lat1  
+    Aqua_CorrectedReflectance20070101_-61--40_10-24...   -61   -40    10    24
+    """
+    import re
+    import pandas as pd
+    import datetime as dt
+    
+    
+    if isinstance(fullpath,str):
+        fullpath=[fullpath]
+    
+    def split_coord_str(coord_str):
+        """Split the coordinate strings which is tricky with the signs"""
+        if '--' in coord_str:
+            c1, c2_ = coord_str.split('--')
+            c2 = '-'+c2_
+        else:
+            c1, c2 = [str_[::-1] for str_ in coord_str[::-1].split('-',maxsplit=1)][::-1]
+        return int(c1),int(c2)
+    
+    file_info = {}
+    for file in fullpath:
+        # Extract filename from full path
+        filename = file.split('/')[-1]
+        # Extract subfolder and its information
+        region, season, _ = file.split('/')[-2].split('_')
+        # Extract information from filename
+        splitted_fn = re.split('[_.]',filename)
+        if len(splitted_fn)==5:
+            #No underscore has been used to separate variable name and date
+            satellite, varNdate, lons, lats, _ = splitted_fn
+            var, date = re.match(r"([a-z]+)([0-9]+)", varNdate, re.I).groups()
+        elif len(splitted_fn)==6:
+            #In case information has been separated solely by underscore
+            satellite, var, date, lons, lats, _ = splitted_fn
+        lon0, lon1 = split_coord_str(lons)
+        lat0, lat1 = split_coord_str(lats)
+        # Extract number of region
+        region = int(re.split('\D+',region)[1])
+        # Convert string time to time obj
+        date_obj = dt.datetime.strptime(date,'%Y%m%d')
+        file_info[filename]={'region':region, 'season':season,
+                             'date':date_obj, 'satellite':satellite, 'parameter':var,
+                             'lon0':lon0, 'lon1':lon1, 'lat0':lat0, 'lat1':lat1}
+        
+    file_info_df = pd.DataFrame.from_dict(file_info,orient='index')
+    return file_info_df
+
 
 def convert_pixelCoords2latlonCoords(coords,regions):
     """
