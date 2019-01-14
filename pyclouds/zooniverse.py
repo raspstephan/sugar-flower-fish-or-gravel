@@ -92,3 +92,106 @@ def split_classification_df(raw_df, workflow_name=None, workflow_version=None, d
     if drop_nli:
         df = df[df.user_name.apply(lambda u: 'not-logged-in' not in u)]
     return df
+
+
+def convert_pixelCoords2latlonCoords(coords,regions):
+    """
+    Converts label coordinates which are originally given
+    in units of pixels into geographical coordinates.
+    
+    Parameters
+    -----
+    coords : sequence of tuples [(lon0,lat0,lon1,lat1),(...),...]
+        List of tuples of length 4 consisting the corner
+        coordinates of a label (NOT x,y,w,h)
+    regions : sequence of integers
+        List of length `coords` to identify the region and its
+        base coordinates
+    
+    Returns
+    -------
+    coords_latlon : array
+        Input coordinates as geographical coordinates in degree N
+        and degree E
+    
+    Example
+    -------
+    >>> convert_pixelCoords2latlonCoords([(20,200,400,100)],[1])
+    array([[-60.79990472],
+           [ 12.00142959],
+           [-56.99809433],
+           [ 11.0007148 ]])
+    >>> convert_pixelCoords2latlonCoords([(20,200,100,400)],[1])
+    array([[-60.79990472],
+           [ 12.00142959],
+           [-59.99952358],
+           [ 14.00285919]])
+    """
+    import numpy as np
+    region_coords = {0: [(-61,10),(-40,24)], 1:[(-61,10),(-40,24)],
+                     2:[(159,8),(180,22)],3:[(-135,-15),(-114,-1)],
+                     4:[(-135,-15),(-114,-1)]
+                    }
+    coords_latlon = np.empty((4,len(coords)))
+    
+    for c,(coord,region) in enumerate(zip(coords,regions)):
+        region_coord_latlon = region_coords[region]
+        lons=np.linspace(region_coord_latlon[0][0],region_coord_latlon[1][0],2100)#[::-1]
+        lats=np.linspace(region_coord_latlon[0][1],region_coord_latlon[1][1],1400)
+        
+        coords_latlon[:,c] = [lons[coord[0]],lats[coord[1]],lons[coord[2]],lats[coord[3]]]
+    return coords_latlon
+
+
+def convert_latlonCoord2pixelCoord(coords_geo,regions):
+    """
+    Converts geographical coordinates of a label to coordinates
+    given as pixels from the lower left border of an image.
+    
+    Parameters
+    -----
+    coords_geo : sequence of tuples [(lon0,lat0),(...),...]
+        List of tuples of length 2 consisting of a
+        coordinate given in degree N and degree E.
+        The `coords` need to be within the region, otherwise
+        an error is raised
+    regions : sequence of integers
+        List of length `coords` to identify the region and its
+        base coordinates
+    
+    Returns
+    -------
+    coords_pixel : array
+        Input coordinates as pixel coordinates relative to
+        the lower left corner of the image
+    
+    Raises
+    ------
+    AssertionError in case coords_geo is outside of region.
+    
+    Example
+    -------
+    >>> convert_latlonCoord2pixelCoord([(-59.4287,13.16272)],[0])
+    array([[157],
+           [316]])
+    """
+    import numpy as np
+    region_coords = {0: [(-61,10),(-40,24)], 1:[(-61,10),(-40,24)],
+                     2:[(159,8),(180,22)],3:[(-135,-15),(-114,-1)],
+                     4:[(-135,-15),(-114,-1)]
+                    }
+    coords_pixel = np.empty((2,len(coords_geo)),dtype='int')
+    
+    for c,(coord,region) in enumerate(zip(coords_geo,regions)):
+        region_coord_latlon = region_coords[region]
+        lons=np.linspace(region_coord_latlon[0][0],region_coord_latlon[1][0],2100)#[::-1]
+        lats=np.linspace(region_coord_latlon[0][1],region_coord_latlon[1][1],1400)
+        
+        # Check if coords are realy within region
+        diff_coords_lon = np.abs(lons-coord[0])
+        diff_coords_lat = np.abs(lats-coord[1])
+        assert(min(diff_coords_lon) < 1),'longitude coordinate outside region'
+        assert(min(diff_coords_lat) < 1),'latitude coordinate outside region'
+        
+        coords_pixel[:,c] = [np.argmin(diff_coords_lon),np.argmin(diff_coords_lat)]
+    return coords_pixel
