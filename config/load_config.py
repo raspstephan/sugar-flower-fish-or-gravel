@@ -1,9 +1,20 @@
 def load_configuration(configuration_file=None):
     """
-    Loads the configuration file PATH.ini.
+    Loads the configuration file CONFIG.ini.
     1. If provided load configuration_file
     2. Attempt to load from home directory
     3. Attempt to load from relative path inside git structure
+
+    Usage:
+        To load the configuration within other scripts
+        the following lines make sure, that no
+        absolute path to this module have to be given.
+        
+        from subprocess import check_output
+        git_rep_path = check_output(["git", "rev-parse", "--show-toplevel"]).strip().decode()
+        sys.path.append(git_rep_path+'/config')
+        from load_config import load_configuration
+        CONFIG=load_configuration()
 
     Args:
         configuration_file: optional: complete path to the configuration file.
