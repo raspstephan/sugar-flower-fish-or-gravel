@@ -73,25 +73,89 @@ def most_common_boxes(boxes, visualize=False, return_all_pattern=False):
     else: return common_box
 
 
-def split_classification_df(raw_df, workflow_name=None, workflow_version=None, date_range=None, drop_nli=False):
+def split_classification_df(df_or_fn, workflow_name=None, workflow_version=None, date_range=None,
+                            drop_nli=False, subj_df_or_fn=None):
     """
+    Input: either raw classification dataframe that comes out of parse_classifications()
+    or string of classification csv file.
     Takes as input the raw classification dataframe that comes out of parse_classifications().
     Adds a datetime column. If not None, returns only rows with workflow_name, workflow_version.
     Optionally, returns only labels in a certain date range. Dates must be in string format 'yyyy-mm-dd'.
     Optionally, drops all labels of users that were not-logged-in (nli).
     """
-    df = raw_df.copy()
+    if type(df_or_fn) is str:
+        df = parse_classifications(
+            df_or_fn, json_columns=['metadata', 'annotations', 'subject_data'])
+    elif type(df_or_fn) is pd.DataFrame:
+        df = df_or_fn.copy()
+    else:
+        raise TypeError('First argument must be csv string or DataFrame.')
+
+    # Load subject file
+    if subj_df_or_fn is not None:
+        if type(subj_df_or_fn) is str:
+            s_df = load_classifications(subj_df_or_fn)
+        elif type(subj_df_or_fn) is pd.DataFrame:
+            s_df = subj_df_or_fn.copy()
+        else:
+            raise TypeError('subj_df_or_str argument must be csv string or DataFrame.')
+        add_subject_set_id_to_clas_df(df, s_df)
+
     df['datetime'] = pd.to_datetime(df['created_at'])
     if workflow_name is not None:
         df = df[df.workflow_name == workflow_name]
     if workflow_version is not None:
-        df = df[df.workflow_version == workflow_name]
+        df = df[df.workflow_version == workflow_version]
     if date_range is not None:
         df = df[(df.datetime.dt.date > np.datetime64(date_range[0])) &
                 (df.datetime.dt.date < np.datetime64(date_range[1]))]
     if drop_nli:
         df = df[df.user_name.apply(lambda u: 'not-logged-in' not in u)]
     return df
+
+
+def convert_clas_to_annos_df(clas_df):
+    """
+    Converts a classification pd.DataFrame parsed from the raw Zooniverse file to a pd.DataFrame
+    that has one row per bounding box.
+    Additionally, extracts coordinate and metadata information
+    """
+    # We need to figure out first how many items we have in order to allocate the new DataFrame
+    count = 0
+    for i, row in clas_df.iterrows():
+        for anno in row.annotations['value']:
+            count += 1
+    # Allocate new dataframe
+    annos_df = pd.DataFrame(
+        columns=list(clas_df.columns) + ['x', 'y', 'width', 'height', 'tool_label', 'started_at', 'finished_at'],
+        index=np.arange(count)
+    )
+    # go through each annotation
+    j = 0
+    for i, row in clas_df.iterrows():
+        for anno in row.annotations['value']:
+            for c in clas_df.columns:
+                annos_df.iloc[j][c] = row[c]
+            for coord in ['x', 'y', 'width', 'height', 'tool_label']:
+                annos_df.iloc[j][coord] = anno[coord]
+            for meta in ['started_at', 'finished_at']:
+                annos_df.iloc[j][meta] = row.metadata[meta]
+            j += 1
+    # Convert start and finish times to datetime
+    for meta in ['started_at', 'finished_at']:
+        annos_df[meta] = pd.to_datetime(annos_df[meta])
+    return annos_df
+
+
+def add_subject_set_id_to_clas_df(clas_df, subj_df):
+    s = subj_df.set_index('subject_id')
+    s = s[s.subject_set_id.apply(lambda s: s in subj_id2name.keys())]
+    clas_df['subject_set_id'] = clas_df.subject_ids.apply(
+        lambda i: s.loc[i].subject_set_id if i in list(s.index) else np.nan)
+    clas_df.dropna(subset=['subject_set_id'], inplace=True)
+    clas_df['subject_set'] = clas_df.subject_set_id.apply(lambda s: subj_id2name[s])
+    return clas_df
+
 
 
 def convert_pixelCoords2latlonCoords(coords,regions):
