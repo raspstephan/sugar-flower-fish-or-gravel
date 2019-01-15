@@ -123,8 +123,7 @@ def convert_clas_to_annos_df(clas_df):
     # We need to figure out first how many items we have in order to allocate the new DataFrame
     count = 0
     for i, row in clas_df.iterrows():
-        for anno in row.annotations['value']:
-            count += 1
+        count += max(1, len(row.annotations['value']))
     # Allocate new dataframe
     annos_df = pd.DataFrame(
         columns=list(clas_df.columns) + ['x', 'y', 'width', 'height', 'tool_label', 'started_at', 'finished_at'],
@@ -133,7 +132,10 @@ def convert_clas_to_annos_df(clas_df):
     # go through each annotation
     j = 0
     for i, row in clas_df.iterrows():
-        for anno in row.annotations['value']:
+        coords = row.annotations['value']
+        if len(coords) == 0:
+            coords = [{'x': None, 'y': None, 'width': None, 'height': None, 'tool_label': None}]
+        for anno in coords:
             for c in clas_df.columns:
                 annos_df.iloc[j][c] = row[c]
             for coord in ['x', 'y', 'width', 'height', 'tool_label']:
@@ -148,12 +150,18 @@ def convert_clas_to_annos_df(clas_df):
 
 
 def add_subject_set_id_to_clas_df(clas_df, subj_df):
+    """
+    Adds subject_set_id, subject_set (name) and subject filename (fn) to classification dataset
+    from the subject dataset.
+    """
     s = subj_df.set_index('subject_id')
     s = s[s.subject_set_id.apply(lambda s: s in subj_id2name.keys())]
     clas_df['subject_set_id'] = clas_df.subject_ids.apply(
         lambda i: s.loc[i].subject_set_id if i in list(s.index) else np.nan)
     clas_df.dropna(subset=['subject_set_id'], inplace=True)
     clas_df['subject_set'] = clas_df.subject_set_id.apply(lambda s: subj_id2name[s])
+    # Also add filename
+    clas_df['fn'] = clas_df.subject_ids.apply(lambda i: s.loc[i].metadata['fn'][48:])
     return clas_df
 
 
