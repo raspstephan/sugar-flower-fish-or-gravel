@@ -1,5 +1,10 @@
 # Cloud classification project
 
+
+
+
+
+
 ## Repository structure
 
 - `image_download`: Scripts to download and rescale the images from NASA Worldview
