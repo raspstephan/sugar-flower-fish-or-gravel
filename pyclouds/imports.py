@@ -9,14 +9,19 @@ import pandas as pd
 import xarray as xr
 import numpy as np
 import matplotlib.pyplot as plt
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 import matplotlib.patches as patches
 from PIL import Image
 import seaborn as sns
-import itertools
+from itertools import combinations
 import pdb
+from tqdm import tqdm_notebook as tqdm
+import warnings
+warnings.filterwarnings("ignore")
 
-subj_id2name = {60811:'BCO_DJF_Aqua',60812:'BCO_DJF_Terra',60813: 'BCO_MAM_Aqua',
-                60814: 'BCO_MAM_Terra',60815:'R2_DJF_Aqua',60816:'R2_DJF_Terra',
-                60817:'R3_DJF_Aqua', 60818:'R3_DJF_Terra',60819:'R3_SON_Aqua',
-                60835: 'R3_SON_Terra'}
+subj_id2name = {60811:'Region1_DJF_Aqua',60812:'Region1_DJF_Terra',60813: 'Region1_MAM_Aqua',
+                60814: 'Region1_MAM_Terra',60815:'Region2_DJF_Aqua',60816:'Region2_DJF_Terra',
+                60817:'Region3_DJF_Aqua', 60818:'Region3_DJF_Terra',60819:'Region3_SON_Aqua',
+                60835: 'Region3_SON_Terra'}
+
+classes = ['Sugar', 'Flower', 'Fish', 'Gravel']
