@@ -8,6 +8,7 @@ Author: Stephan Rasp, raspstephan@gmail.com
 import pandas as pd
 import xarray as xr
 import numpy as np
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 from collections import defaultdict, OrderedDict
 import matplotlib.patches as patches
@@ -25,3 +26,6 @@ subj_id2name = {60811:'Region1_DJF_Aqua',60812:'Region1_DJF_Terra',60813: 'Regio
                 60835: 'Region3_SON_Terra'}
 
 classes = ['Sugar', 'Flower', 'Fish', 'Gravel']
+
+l2c = {'Sugar': [241, 244, 66], 'Flower': [244, 65, 65], 'Fish': [65, 241, 244], 'Gravel': [73, 244, 65]}
+

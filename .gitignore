@@ -6,3 +6,6 @@ saved_models/
 .DS_Store
 .gitattributes
 **/__pycache__
+*.egg-info/
+dist/
+build/
