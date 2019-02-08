@@ -6,12 +6,13 @@ Author: Stephan Rasp, raspstephan@gmail.com
 """
 
 from .imports import *
+import matplotlib.patheffects as PathEffects
 
-l2c = {'Sugar': [241, 244, 66], 'Flower': [244, 65, 65], 'Fish': [65, 241, 244],
-           'Gravel': [73, 244, 65]}
 
-def plot_img_with_annos(subj_id, img_path, subj_df, annos_df=None, user=None, cols=1,
-                        figsize=(18, 15), ax_obj=None):
+
+def plot_img_with_annos(subj_id, img_path, annos_df, user=None, cols=1,
+                        figsize=(18, 15), ax_obj=None, show_boxes=True, show_labels=True,
+                        show_names=True):
 
     if type(subj_id) not in [list, np.ndarray]: subj_id = [subj_id]
     nfigs = len(subj_id)
@@ -21,25 +22,29 @@ def plot_img_with_annos(subj_id, img_path, subj_df, annos_df=None, user=None, co
     else: axs = ax_obj
 
     for s, ax in zip(subj_id, axs.flat if (nfigs > 1)  else [axs]):
-        fn = str(img_path + subj_df[subj_df.subject_id == s].iloc[0]['fn'])
+        fn = str(img_path + annos_df[annos_df.subject_ids == s].iloc[0]['fn'])
         img = Image.open(fn)
         ax.imshow(img)
-        ax.set_xticks([]);
+        ax.set_xticks([])
         ax.set_yticks([])
-        if annos_df is not None:
+        if show_boxes:
             ans = annos_df[annos_df.subject_ids == s]
             if user is not None: ans = ans[ans.user_name == user]
             nones = []
             for i, a in ans.iterrows():
-                if np.isfinite(a['x']):
+                if a['x'] is not None:
                     rect = patches.Rectangle((a['x'], a['y']), a['width'], a['height'],
                                              facecolor='none',
                                              edgecolor=np.array(l2c[a['tool_label']]) / 255, lw=2)
                     ax.add_patch(rect)
-                    ax.text(a['x'], a['y'], a['tool_label'] + ' - ' + a['user_name'],
-                            color=(0, 1, 0), fontsize=15, va='top')
+                    if show_labels:
+                        s = a['tool_label']
+                        if show_names: s += ' - ' + a['user_name']
+                        txt = ax.text(a['x'], a['y'], s, color='white', fontsize=15, va='top')
+                        txt.set_path_effects([PathEffects.withStroke(linewidth=5, foreground='k')])
                 else:
                     nones.append(a['user_name'])
             if len(nones) > 0:
-                ax.text(0, -50, 'None: ' + str(nones), color='red', fontsize=15, va='top')
-    if ax is None: plt.tight_layout()
+                s = str(nones) if show_names and show_labels else str(len(nones))
+                ax.text(0, -50, 'None: ' + s, color='k', fontsize=15, va='top')
+    if ax_obj is None: plt.tight_layout()

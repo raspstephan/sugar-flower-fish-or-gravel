@@ -7,3 +7,4 @@ pillow
 seaborn
 tqdm
 keras
+jupyter
