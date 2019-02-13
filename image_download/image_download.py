@@ -68,6 +68,7 @@ def download_imgs(year_range, months, save_path, lon_range, lat_range,
                        str(yr)+d+loc+'&epsg=4326'+layer+
                        '&opacities=1,1&worldfile=false&format=image/jpeg'+
                        size)
+                #print(url)
                 save_str = (save_path+f'/{satellite}_CorrectedReflectance'+str(yr)+
                     date.strftime('%m')+'{:02d}'.format(date.day)+loc_str+
                     '.jpeg')
@@ -78,6 +79,7 @@ def download_imgs(year_range, months, save_path, lon_range, lat_range,
                         urllib.request.urlretrieve(url, save_str)
                     except:
                         print(f'Download failed for {save_str}')
+                #break
 
 
 if __name__ == '__main__':
