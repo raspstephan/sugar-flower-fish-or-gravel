@@ -134,7 +134,7 @@ def convert_clas_to_annos_df(clas_df):
     for i, row in clas_df.iterrows():
         coords = row.annotations['value']
         if len(coords) == 0:
-            coords = [{'x': None, 'y': None, 'width': None, 'height': None, 'tool_label': None}]
+            coords = [{'x': np.nan, 'y': np.nan, 'width': np.nan, 'height': np.nan, 'tool_label': np.nan}]
         for anno in coords:
             for c in clas_df.columns:
                 annos_df.iloc[j][c] = row[c]
