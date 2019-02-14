@@ -29,10 +29,10 @@ def plot_img_with_annos(subj_id, img_path, annos_df, user=None, cols=1,
         ax.set_yticks([])
         if show_boxes:
             ans = annos_df[annos_df.subject_ids == s]
-            if user is not None: ans = ans[ans.user_name == user]
+            if user is not None: ans = ans[ans.user_name.apply(lambda x: user in x)]
             nones = []
             for i, a in ans.iterrows():
-                if a['x'] is not None:
+                if np.isfinite(a['x']):
                     rect = patches.Rectangle((a['x'], a['y']), a['width'], a['height'],
                                              facecolor='none',
                                              edgecolor=np.array(l2c[a['tool_label']]) / 255, lw=2)
