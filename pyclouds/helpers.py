@@ -11,6 +11,9 @@ def wh2xy(x, y, w, h):
     """Converts [x, y, w, h] to [x1, y1, x2, y2], i.e. bottom left and top right coords."""
     return x, y, x+w, y+h
 
+def xy2wh(x1, y1, x2, y2):
+    return [x1, y1, x2-x1, y2-y1]
+
 
 def annos_from_df(clas_df, img_size):
     """Dictionary for every subject containing all annotations (also empty ones!)"""
