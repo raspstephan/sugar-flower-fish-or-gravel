@@ -39,7 +39,7 @@ python setup.py develop
 
 Right now I am using two deep learning algorithms: 1) A [Resnet](https://arxiv.org/abs/1708.02002) for object detection and 2) a [Unet](https://arxiv.org/abs/1505.04597) version that uses the [fastai](https://docs.fast.ai/) library for image segmentation.
 
-Pretrained network versions are available here: TODO
+Pretrained network versions are available here: https://doi.org/10.5281/zenodo.2565146
 
 ### Object detection with keras-retinanet
 
