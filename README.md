@@ -1,4 +1,6 @@
-# Sugar, Flower, Fish or Gravel
+# Sugar, Flower, Fish or Gravel 
+
+![Logo](https://raw.githubusercontent.com/raspstephan/sugar-flower-fish-or-gravel/master/logo/sffg-small.png)
 
 Welcome to the repository for the [Zooniverse cloud classification project](https://www.zooniverse.org/projects/raspstephan/sugar-flower-fish-or-gravel)
 
