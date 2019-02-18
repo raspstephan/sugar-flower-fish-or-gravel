@@ -8,3 +8,4 @@ seaborn
 tqdm
 keras>=2.2.4
 jupyter
+cartopy
