@@ -26,7 +26,7 @@ python setup.py install
 
 ### Keras GPU install
 
-To use the GPU with Keras which is strongly recommended if you wnat to train a neural network (see below), you have to replace `keras` with `keras-gpu` in the requirements.txt file. Unfortunately it doesn't alway work right out of the box depending on your system.
+To use the GPU with Keras which is strongly recommended if you want to train a neural network (see below), you have to replace `keras` with `keras-gpu` in the requirements.txt file. Unfortunately it doesn't always work right out of the box depending on your system.
 
 If you only want to use the pretrained models, you can also do this on CPU.
 
@@ -65,7 +65,7 @@ Then follow the instructions in the `ml-retinanet` notebook for training and inf
 
 **WARNING**: fastai requires Python 3.7. I used a different conda environment for the fastai experiments. Follow the instructions on the fastai documentation.
 
-In image segmentation, every pixel is assigned one category. For this we first need to crease "masks", i.e. an image for every classification that indicates with category each pixel belongs to. This happens in the `create-segmentation-masks` notebook.
+In image segmentation, every pixel is assigned one category. For this we first need to create "masks", i.e. an image for every classification that indicates with category each pixel belongs to. This happens in the `create-segmentation-masks` notebook.
 
 Then we are using the fastai library to create a modern Unet version in `ml-fastai-segmentation`.
 
