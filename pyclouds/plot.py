@@ -35,12 +35,13 @@ def plot_img_with_annos(subj_id, img_path, annos_df, user=None, cols=1,
                 if np.isfinite(a['x']):
                     rect = patches.Rectangle((a['x'], a['y']), a['width'], a['height'],
                                              facecolor='none',
-                                             edgecolor=np.array(l2c[a['tool_label']]) / 255, lw=2)
+                                             edgecolor=np.array(l2c[a['tool_label']]) / 255, lw=2,
+                                             zorder=100)
                     ax.add_patch(rect)
                     if show_labels:
                         s = a['tool_label']
                         if show_names: s += ' - ' + a['user_name']
-                        txt = ax.text(a['x'], a['y'], s, color='white', fontsize=15, va='top')
+                        txt = ax.text(a['x'], a['y'], s, color='white', fontsize=15, va='top', zorder=1000)
                         txt.set_path_effects([PathEffects.withStroke(linewidth=5, foreground='k')])
                 else:
                     nones.append(a['user_name'])

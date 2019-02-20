@@ -36,6 +36,10 @@ If you want to modify the functions inside `pyclouds` you can do a development i
 python setup.py develop
 ```
 
+## Download NASA Worldview Images
+
+We are using satellite images provided by [NASA Worldview](https://worldview.earthdata.nasa.gov/). Go to the [image_download](https://github.com/raspstephan/sugar-flower-fish-or-gravel/tree/master/image_download) directory for further instructions.
+
 
 ## Deep learning algorithms
 
