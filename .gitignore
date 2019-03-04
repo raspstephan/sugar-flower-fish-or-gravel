@@ -9,5 +9,5 @@ saved_models/
 *.egg-info/
 dist/
 build/
-preprocessed_data/
-zooniverse_raw/
+preprocessed_data_original/
+zooniverse_raw_original/
