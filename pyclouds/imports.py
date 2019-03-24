@@ -20,6 +20,7 @@ import os
 from glob import glob
 from tqdm import tqdm_notebook as tqdm
 import warnings
+import pickle
 warnings.filterwarnings("ignore")
 
 subj_id2name = {60811:'Region1_DJF_Aqua',60812:'Region1_DJF_Terra',60813: 'Region1_MAM_Aqua',
