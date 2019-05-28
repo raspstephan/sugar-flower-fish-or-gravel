@@ -12,7 +12,7 @@ import matplotlib.patheffects as PathEffects
 
 def plot_img_with_annos(subj_id, img_path, annos_df, user=None, cols=1,
                         figsize=(18, 15), ax_obj=None, show_boxes=True, show_labels=True,
-                        show_names=True):
+                        show_names=True, l2c=l2c):
 
     if type(subj_id) not in [list, np.ndarray]: subj_id = [subj_id]
     nfigs = len(subj_id)
@@ -35,7 +35,7 @@ def plot_img_with_annos(subj_id, img_path, annos_df, user=None, cols=1,
                 if np.isfinite(a['x']):
                     rect = patches.Rectangle((a['x'], a['y']), a['width'], a['height'],
                                              facecolor='none',
-                                             edgecolor=np.array(l2c[a['tool_label']]) / 255, lw=2,
+                                             edgecolor=l2c[a['tool_label']], lw=2,
                                              zorder=100)
                     ax.add_patch(rect)
                     if show_labels:

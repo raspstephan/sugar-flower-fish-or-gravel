@@ -30,7 +30,13 @@ subj_id2name = {60811:'Region1_DJF_Aqua',60812:'Region1_DJF_Terra',60813: 'Regio
 
 classes = ['Sugar', 'Flower', 'Fish', 'Gravel']
 
-l2c = {'Sugar': [241, 244, 66], 'Flower': [244, 65, 65], 'Fish': [65, 241, 244], 'Gravel': [73, 244, 65]}
+l2c = {
+    'Sugar': np.array([241, 244, 66])/255.,
+    'Flower': np.array([244, 65, 65])/255.,
+    'Fish': np.array([65, 241, 244])/255.,
+    'Gravel': np.array([73, 244, 65])/255.
+}
+
 
 id2c = {1: 'Sugar', 2: 'Flower', 3: 'Fish', 4: 'Gravel'}
 c2id = {'Sugar': 1, 'Flower': 2, 'Fish': 3, 'Gravel': 4}
