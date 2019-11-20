@@ -4,6 +4,8 @@
 
 Welcome to the repository for the [Zooniverse cloud classification project](https://www.zooniverse.org/projects/raspstephan/sugar-flower-fish-or-gravel)
 
+*Attention: This repository still needs some cleaning up, so a few things might not work.*
+
 ## Installation
 
 We highly recommend using Anaconda to manage your Python packages.
