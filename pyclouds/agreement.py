@@ -19,6 +19,7 @@ def get_agreement_over_subjects(subjects, annos_df, thresh=0.15, tq=None, user=N
                                 score='agreement'):
     agree = defaultdict(int)
     tot = defaultdict(int)
+    iou = defaultdict(list)
     for s in tqdm(subjects, disable=tq):
         if score == 'agreement':
             if arr_dir is not None:
@@ -33,7 +34,12 @@ def get_agreement_over_subjects(subjects, annos_df, thresh=0.15, tq=None, user=N
                 agree, tot = acc_by_class_and_user_with_arr(s, annos_df, arr_dir, agree, tot)
             else:
                 agree, tot = acc_by_class_and_user(s, annos_df, user, agree, tot)
-    return agree, tot
+        elif score == 'iou':
+            iou = iou_by_class(s, annos_df, iou)
+    if score == 'iou':
+        return iou
+    else:
+        return agree, tot
 
 
 def get_agreement_over_subjects_mp(subjects, annos_df, thresh=0.15, procs=1, user=None, arr_dir=None,
@@ -49,13 +55,19 @@ def get_agreement_over_subjects_mp(subjects, annos_df, thresh=0.15, procs=1, use
         for i in range(procs)
     ]
     results = [p.get() for p in out]
-    agree = defaultdict(int)
-    tot = defaultdict(int)
-    for c in classes:
-        agree[c] += sum([r[0][c] for r in results])
-        tot[c] += sum([r[1][c] for r in results])
-    pool.close()
-    return agree, tot
+    if score == 'iou':
+        iou = defaultdict(list)
+        for c in classes + ['Not classified']:
+            for r in results: iou[c].extend(r[c])
+        return iou
+    else:
+        agree = defaultdict(int)
+        tot = defaultdict(int)
+        for c in classes:
+            agree[c] += sum([r[0][c] for r in results])
+            tot[c] += sum([r[1][c] for r in results])
+        pool.close()
+        return agree, tot
 
 
 def acc_by_class_and_user(subj_id, annos_df, user=None, err=None, tot=None, img_size=(2100, 1400)):
@@ -82,6 +94,7 @@ def acc_by_class_and_user(subj_id, annos_df, user=None, err=None, tot=None, img_
             annos2 = [[int(r[c]) for c in ['x', 'y', 'width', 'height']] for i, r in
                       a2.iterrows()]
             e, t = acc_one_class_from_annos(annos1, annos2, img_size)
+            # print(u1, u2, e, t)
 
             err[c] += e
             tot[c] += t
@@ -242,6 +255,51 @@ def simple_agreement_by_class_with_overlap(subj_id, annos_df, agree=None, tot=No
     return agree, tot
 
 
+def iou_by_class(subj_id, annos_df, iou=None, img_size=(2100, 1400), verbose=0):
+    """
+    Essentially the same as the simple agreement score by class, but conditional on an IoU overlap
+    of at least thresh.
+    """
+    ans = annos_df[annos_df.subject_ids == subj_id]
+    users = ans.user_name.unique()
+
+    if iou is None: iou = defaultdict(list)
+    for u1, u2 in combinations(users, 2):
+        # print(u1, u2)
+        for c in classes + ['Not classified']:
+            if c == 'Not classified':
+                # pdb.set_trace()
+                a1 = ans[(ans.user_name == u1)]
+                a2 = ans[(ans.user_name == u2)]
+                a1 = a1.replace(np.NaN, 0)
+                a2 = a2.replace(np.NaN, 0)
+            else:
+                a1 = ans[(ans.user_name == u1) & (ans.tool_label == c)]
+                a2 = ans[(ans.user_name == u2) & (ans.tool_label == c)]
+            # Option 1: both zero --> skip
+            if (len(a1) == 0) & (len(a2) == 0):
+                # print(c, 'a')
+                pass
+            # Option 2: Both people have this class:
+            elif (len(a1) > 0) and (len(a2) > 0):
+                # print(c, 'b')
+                # Now check if overlap > threshold
+                annos1 = [[int(r[col]) for col in ['x', 'y', 'width', 'height']] for i, r in
+                          a1.iterrows()]
+                annos2 = [[int(r[col]) for col in ['x', 'y', 'width', 'height']] for i, r in
+                          a2.iterrows()]
+                i = iou_one_class_from_annos(annos1, annos2, img_size, True,
+                                             not_classified=c=='Not classified')
+                if verbose: print(c, u1, u2, 'IoU = ', i)
+                iou[c]+=[i]
+            # Option 3: Only one user has this class
+            else:
+                if verbose: print(c, u1, u2, 'IoU = ', 0)
+                iou[c].append(0)
+
+    return iou
+
+
 def simple_agreement_by_class_and_user_with_overlap(subj_id, annos_df, user, agree=None, tot=None,
                                                     thresh=0.1, img_size=(2100, 1400)):
     ans = annos_df[annos_df.subject_ids == subj_id]
@@ -359,7 +417,7 @@ def iou_multi_class(annos1, annos2, classes, img_size):
     return i_tot / u_tot
 
 
-def iou_one_class_from_annos(annos1, annos2, img_size, return_iou=False):
+def iou_one_class_from_annos(annos1, annos2, img_size, return_iou=False, not_classified=False):
     """
     Returns the IoU from lists of [x, y, w, h] annotations.
     Image size must be given because arrays are created internally.
@@ -368,6 +426,9 @@ def iou_one_class_from_annos(annos1, annos2, img_size, return_iou=False):
     """
     arr1 = fill_array_with_boxes(annos1, img_size)
     arr2 = fill_array_with_boxes(annos2, img_size)
+    if not_classified:
+        arr1 = ~arr1
+        arr2 = ~arr2
     i = intersect_from_arrs(arr1, arr2)
     u = union_from_arrs(arr1, arr2)
     del arr1, arr2
