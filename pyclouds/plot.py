@@ -44,9 +44,11 @@ def plot_img_with_annos(subj_id, img_path, annos_df, user=None, cols=1,
                                              zorder=0.1,
                                              ls=lss[a['user_name']] if user_ls else '-')
                     ax.add_patch(rect)
-                    if show_labels:
-                        s = a['tool_label']
-                        if show_names: s += ' - ' + a['user_name']
+                    if show_labels or show_names:
+                        s = []
+                        if show_labels: s.append(a['tool_label'])
+                        if show_names: s.append(a['user_name'])
+                        s = ' - '.join(s)
                         txt = ax.text(a['x'], a['y'], s, color='white', fontsize=15, va='top', zorder=0.2)
                         txt.set_path_effects([PathEffects.withStroke(linewidth=5, foreground='k')])
                 else:
@@ -54,7 +56,7 @@ def plot_img_with_annos(subj_id, img_path, annos_df, user=None, cols=1,
 
             t  = f'Total: {len(ans.user_name.unique())} {"user" if len(ans.user_name.unique()) == 1 else "users"}'
             if len(nones) > 0:
-                s = ', '.join(nones) if show_names and show_labels else f"{str(len(nones))}{' user' if len(nones) else ' users'}"
+                s = ', '.join(nones) if show_names else f"{str(len(nones))}{' user' if len(nones) else ' users'}"
                 t += '; No label: ' + s
             if len(nones) > 0 or user_ls:
                 txt = ax.text(10, 10, t, color='w', fontsize=15, va='top')
